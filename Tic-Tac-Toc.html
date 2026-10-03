@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic-Tac-Toe</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    min-height: 100vh;
+    color: #fff;
+    padding: 24px 16px;
+  }
+  h1 { text-align: center; font-size: 2.2rem; letter-spacing: 3px; }
+  .sub { text-align: center; opacity: .8; margin: 6px 0 24px; }
+  .wrap { max-width: 900px; margin: 0 auto; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+  .card {
+    background: rgba(255,255,255,.12);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  .game { width: 340px; max-width: 100%; text-align: center; }
+  .score { display: flex; justify-content: space-between; margin-bottom: 16px; }
+  .score div { background: rgba(0,0,0,.25); border-radius: 10px; padding: 8px 14px; font-size: .9rem; }
+  .score b { display: block; font-size: 1.4rem; }
+  #status { font-size: 1.15rem; margin-bottom: 16px; min-height: 28px; font-weight: 600; }
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .cell {
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 12px;
+    background: #fff;
+    color: #999;
+    font-size: 2.6rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform .15s, background .15s;
+  }
+  .cell:hover:not(:disabled) { transform: scale(1.05); background: #eef3ff; }
+  .cell.X { color: #e63946; }
+  .cell.O { color: #1d7fe0; }
+  .cell.win { background: #ffe066; }
+  .cell:disabled { cursor: not-allowed; }
+  button.main {
+    margin-top: 18px;
+    padding: 10px 26px;
+    border: none;
+    border-radius: 30px;
+    background: #ffb703;
+    color: #222;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.main:hover { background: #ffc933; }
+  .code { flex: 1; min-width: 300px; max-width: 520px; }
+  .code h2 { margin-bottom: 12px; font-size: 1.2rem; }
+  pre {
+    background: #101826;
+    color: #d6e2ff;
+    padding: 14px;
+    border-radius: 10px;
+    overflow: auto;
+    max-height: 520px;
+    font-size: .8rem;
+    line-height: 1.45;
+  }
+  footer { text-align: center; margin-top: 24px; opacity: .7; font-size: .85rem; }
+</style>
+</head>
+<body>
+
+<h1>TIC-TAC-TOE</h1>
+<p class="sub">Two players &bull; Get 3 in a row to win</p>
+
+<div class="wrap">
+  <div class="card game">
+    <div class="score">
+      <div>X Wins<b id="xw">0</b></div>
+      <div>Draws<b id="dr">0</b></div>
+      <div>O Wins<b id="ow">0</b></div>
+    </div>
+    <div id="status"></div>
+    <div class="board" id="board"></div>
+    <button class="main" onclick="newGame()">Play Again</button>
+  </div>
+
+  <div class="card code">
+    <h2>C Source Code (tictactoe.c)</h2>
+<pre>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+
+char board[3][3];
+int xWins = 0, oWins = 0, draws = 0;
+
+void resetBoard()
+{
+    int i, j;
+    for (i = 0; i &lt; 3; i++)
+        for (j = 0; j &lt; 3; j++)
+            board[i][j] = ' ';
+}
+
+int checkWin(char p)
+{
+    int i;
+    for (i = 0; i &lt; 3; i++)
+    {
+        if (board[i][0] == p &amp;&amp; board[i][1] == p &amp;&amp; board[i][2] == p)
+            return 1;
+        if (board[0][i] == p &amp;&amp; board[1][i] == p &amp;&amp; board[2][i] == p)
+            return 1;
+    }
+    if (board[0][0] == p &amp;&amp; board[1][1] == p &amp;&amp; board[2][2] == p)
+        return 1;
+    if (board[0][2] == p &amp;&amp; board[1][1] == p &amp;&amp; board[2][0] == p)
+        return 1;
+    return 0;
+}
+
+int isFull()
+{
+    int i, j;
+    for (i = 0; i &lt; 3; i++)
+        for (j = 0; j &lt; 3; j++)
+            if (board[i][j] == ' ')
+                return 0;
+    return 1;
+}
+
+void makeMove(char p)
+{
+    int pos, row, col, c;
+    while (1)
+    {
+        printf("Player %c, choose (1-9): ", p);
+        if (scanf("%d", &amp;pos) != 1)
+        {
+            while ((c = getchar()) != '\n' &amp;&amp; c != EOF);
+            printf("Invalid input!\n");
+            continue;
+        }
+        if (pos &lt; 1 || pos &gt; 9)
+        {
+            printf("Must be 1-9.\n");
+            continue;
+        }
+        row = (pos - 1) / 3;
+        col = (pos - 1) % 3;
+        if (board[row][col] != ' ')
+        {
+            printf("Position taken!\n");
+            continue;
+        }
+        board[row][col] = p;
+        break;
+    }
+}
+
+/* main(): random start, loop until win/draw,
+   then ask "Play again?" (see tictactoe.c) */</pre>
+  </div>
+</div>
+
+<footer>The game on this page uses the same logic as the C program.</footer>
+
+<script>
+  var wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  var cells = [], current, over, score = { X: 0, O: 0, D: 0 };
+  var boardEl = document.getElementById("board");
+  var statusEl = document.getElementById("status");
+
+  function newGame() {
+    cells = ["", "", "", "", "", "", "", "", ""];
+    over = false;
+    current = Math.random() < 0.5 ? "X" : "O";   /* random starter */
+    draw();
+    statusEl.textContent = "Player " + current + " starts!";
+  }
+
+  function draw(winLine) {
+    boardEl.innerHTML = "";
+    for (var i = 0; i < 9; i++) {
+      var b = document.createElement("button");
+      b.className = "cell " + cells[i];
+      b.textContent = cells[i] || (i + 1);
+      b.disabled = over || cells[i] !== "";
+      if (winLine && winLine.indexOf(i) !== -1) b.className += " win";
+      b.onclick = (function (n) { return function () { play(n); }; })(i);
+      boardEl.appendChild(b);
+    }
+  }
+
+  function play(i) {
+    if (over || cells[i] !== "") return;
+    cells[i] = current;
+
+    for (var w = 0; w < wins.length; w++) {
+      var l = wins[w];
+      if (cells[l[0]] === current && cells[l[1]] === current && cells[l[2]] === current) {
+        over = true;
+        score[current]++;
+        draw(l);
+        statusEl.textContent = "Player " + current + " WINS!";
+        updateScore();
+        return;
+      }
+    }
+
+    if (cells.indexOf("") === -1) {
+      over = true;
+      score.D++;
+      draw();
+      statusEl.textContent = "It's a DRAW!";
+      updateScore();
+      return;
+    }
+
+    current = current === "X" ? "O" : "X";
+    draw();
+    statusEl.textContent = "Player " + current + "'s turn";
+  }
+
+  function updateScore() {
+    document.getElementById("xw").textContent = score.X;
+    document.getElementById("ow").textContent = score.O;
+    document.getElementById("dr").textContent = score.D;
+  }
+
+  newGame();
+</script>
+</body>
+</html>
+/*
+or create a new repository on the command line
+echo "# RRR-Game-Project_of-IUS" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/SHRobin123/RRR-Game-Project_of-IUS.git
+git push -u origin main
+…or push an existing repository from the command line
+git remote add origin https://github.com/SHRobin123/RRR-Game-Project_of-IUS.git
+git branch -M main
+git push -u origin main
+*/
